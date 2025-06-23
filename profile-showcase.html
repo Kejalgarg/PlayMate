@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alex Smith - PlayMate Profile</title>
+    <meta name="description" content="Alex Smith's profile on PlayMate - Level 12 athlete specializing in Basketball, Cricket, and Tennis">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'hsl(217, 91%, 60%)',
+                        secondary: 'hsl(142, 76%, 36%)',
+                        accent: 'hsl(45, 93%, 47%)',
+                        'slate-50': 'hsl(210, 40%, 98%)',
+                        'slate-100': 'hsl(210, 40%, 96%)',
+                        'slate-900': 'hsl(222, 84%, 5%)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(142, 76%, 36%) 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .badge-glow {
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #3b82f6 0%, #10b981 50%, #f59e0b 100%);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .activity-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: linear-gradient(to bottom, #3b82f6, #10b981, #f59e0b);
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid;
+            z-index: 1;
+        }
+        
+        .timeline-achievement::before {
+            border-color: #f59e0b;
+            background: #fbbf24;
+        }
+        
+        .timeline-game::before {
+            border-color: #3b82f6;
+            background: #60a5fa;
+        }
+        
+        .timeline-social::before {
+            border-color: #10b981;
+            background: #34d399;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(251, 191, 36, 0.8);
+            }
+        }
+        
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+        
+        .level-progress {
+            background: linear-gradient(90deg, #3b82f6 0%, #1e40af  100%);
+        }
+        
+        .sport-mastery {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        }
+        
+        .sport-mastery.intermediate {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        }
+        
+        .sport-mastery.advanced {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
+                        <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900">PlayMate</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-blue-500 font-medium flex items-center space-x-1">
+                        <i data-lucide="home" class="w-4 h-4"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="text-gray-700 hover:text-blue-500 font-medium flex items-center space-x-1">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span>Friends</span>
+                    </a>
+                    <a href="#" class="bg-blue-50 text-blue-600 px-3 py-2 rounded-lg font-medium flex items-center space-x-1">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        <span>Profile</span>
+                    </a>
+                    <a href="#" class="text-gray-700 hover:text-blue-500 font-medium flex items-center space-x-1">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                        <span>Preferences</span>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="bg-yellow-500 text-white font-semibold px-3 py-1 rounded-full text-sm">
+                        Level 12
+                    </div>
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                        AS
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Profile Header -->
+        <div class="hero-gradient rounded-3xl p-8 mb-8 text-white relative overflow-hidden">
+            <!-- Background Pattern -->
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-10 left-10 w-20 h-20 border-2 border-white rounded-full"></div>
+                <div class="absolute top-20 right-20 w-16 h-16 bg-white rounded-full"></div>
+                <div class="absolute bottom-10 left-20 w-12 h-12 border-2 border-white rounded-lg rotate-45"></div>
+                <div class="absolute bottom-20 right-10 w-8 h-8 bg-white rounded-full"></div>
+            </div>
+            
+            <div class="relative z-10">
+                <div class="flex flex-col lg:flex-row items-start lg:items-center space-y-6 lg:space-y-0 lg:space-x-8">
+                    <!-- Profile Avatar -->
+                    <div class="relative">
+                        <div class="w-32 h-32 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-4xl font-bold text-white border-4 border-white/30 animate-pulse-glow">
+                            AS
+                        </div>
+                        <div class="absolute -bottom-2 -right-2 bg-yellow-400 rounded-full p-2 border-4 border-white">
+                            <i data-lucide="crown" class="w-6 h-6 text-yellow-800"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Info -->
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <h1 class="text-4xl font-bold">Alex Smith</h1>
+                            <div class="bg-green-400 text-green-900 px-3 py-1 rounded-full text-sm font-semibold flex items-center">
+                                <div class="w-2 h-2 bg-green-600 rounded-full mr-2 animate-pulse"></div>
+                                Online
+                            </div>
+                        </div>
+                        
+                        <!-- Level Progress -->
+                        <div class="mb-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-lg font-semibold">Level 12 Athlete</span>
+                                <span class="text-blue-100">2,450 / 3,000 XP</span>
+                            </div>
+                            <div class="w-full bg-white/20 rounded-full h-3">
+                                <div class="level-progress h-3 rounded-full" style="width: 81.7%"></div>
+                            </div>
+                            <p class="text-sm text-blue-100 mt-1">550 XP to next level</p>
+                        </div>
+                        
+                        <!-- Quick Stats -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="stat-card rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold">127</div>
+                                <div class="text-sm text-blue-100">Games Played</div>
+                            </div>
+                            <div class="stat-card rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold">23</div>
+                                <div class="text-sm text-blue-100">Friends</div>
+                            </div>
+                            <div class="stat-card rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold">8</div>
+                                <div class="text-sm text-blue-100">Badges</div>
+                            </div>
+                            <div class="stat-card rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold">45</div>
+                                <div class="text-sm text-blue-100">Games Hosted</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col space-y-3">
+                        <button class="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors flex items-center space-x-2">
+                            <i data-lucide="user-plus" class="w-5 h-5"></i>
+                            <span>Add Friend</span>
+                        </button>
+                        <button class="bg-white/20 backdrop-blur text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition-colors flex items-center space-x-2">
+                            <i data-lucide="message-circle" class="w-5 h-5"></i>
+                            <span>Send Message</span>
+                        </button>
+                        <button class="bg-yellow-500 text-yellow-900 px-6 py-3 rounded-xl font-semibold hover:bg-yellow-400 transition-colors flex items-center space-x-2">
+                            <i data-lucide="gamepad-2" class="w-5 h-5"></i>
+                            <span>Invite to Game</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Sports Expertise -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="trophy" class="w-6 h-6 mr-3 text-yellow-500"></i>
+                        Sports Expertise
+                    </h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Basketball -->
+                        <div class="sport-mastery advanced rounded-xl p-6 border-2 border-blue-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-xl">
+                                        🏀
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg">Basketball</h4>
+                                        <span class="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-semibold">Advanced</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-blue-600">87</div>
+                                    <div class="text-sm text-gray-600">Games</div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span>Win Rate</span>
+                                    <span class="font-semibold">73%</span>
+                                </div>
+                                <div class="w-full bg-blue-100 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 73%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cricket -->
+                        <div class="sport-mastery intermediate rounded-xl p-6 border-2 border-green-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-xl">
+                                        🏏
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg">Cricket</h4>
+                                        <span class="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">Intermediate</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-green-600">34</div>
+                                    <div class="text-sm text-gray-600">Matches</div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span>Avg. Score</span>
+                                    <span class="font-semibold">45 runs</span>
+                                </div>
+                                <div class="w-full bg-green-100 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 65%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tennis -->
+                        <div class="sport-mastery rounded-xl p-6 border-2 border-gray-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center text-xl">
+                                        🎾
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg">Tennis</h4>
+                                        <span class="border border-gray-400 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">Beginner</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-yellow-600">6</div>
+                                    <div class="text-sm text-gray-600">Sets</div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span>Win Rate</span>
+                                    <span class="font-semibold">33%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-2">
+                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 33%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add Sport Card -->
+                        <div class="rounded-xl p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center space-y-3 hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
+                            <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i data-lucide="plus" class="w-6 h-6 text-gray-600"></i>
+                            </div>
+                            <div class="text-center">
+                                <h4 class="font-bold text-gray-700">Add New Sport</h4>
+                                <p class="text-sm text-gray-500">Expand your athletic portfolio</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Timeline -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="activity" class="w-6 h-6 mr-3 text-blue-500"></i>
+                        Recent Activity
+                    </h3>
+                    
+                    <div class="activity-timeline relative space-y-6">
+                        <div class="timeline-item timeline-achievement">
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-yellow-800">Earned "Court Master" Badge</h4>
+                                    <span class="text-xs text-yellow-600">2 hours ago</span>
+                                </div>
+                                <p class="text-sm text-yellow-700">Achieved 50 basketball game wins</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-lg mr-2">🏀</span>
+                                    <span class="bg-yellow-400 text-yellow-900 px-2 py-1 rounded text-xs font-bold">+100 XP</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item timeline-game">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-blue-800">Won Basketball Game</h4>
+                                    <span class="text-xs text-blue-600">5 hours ago</span>
+                                </div>
+                                <p class="text-sm text-blue-700">Victory at Central Park Court vs Team Thunder</p>
+                                <div class="flex items-center mt-2 space-x-2">
+                                    <span class="text-lg">🏆</span>
+                                    <span class="bg-blue-400 text-blue-900 px-2 py-1 rounded text-xs font-bold">+25 XP</span>
+                                    <span class="text-xs text-blue-600">Final Score: 21-18</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item timeline-social">
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-green-800">New Friend Connection</h4>
+                                    <span class="text-xs text-green-600">1 day ago</span>
+                                </div>
+                                <p class="text-sm text-green-700">Connected with Maya Johnson</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-lg mr-2">👥</span>
+                                    <span class="bg-green-400 text-green-900 px-2 py-1 rounded text-xs font-bold">+15 XP</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item timeline-game">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-blue-800">Hosted Cricket Match</h4>
+                                    <span class="text-xs text-blue-600">2 days ago</span>
+                                </div>
+                                <p class="text-sm text-blue-700">Organized 11-player cricket match at Riverside Ground</p>
+                                <div class="flex items-center mt-2 space-x-2">
+                                    <span class="text-lg">🏏</span>
+                                    <span class="bg-blue-400 text-blue-900 px-2 py-1 rounded text-xs font-bold">+30 XP</span>
+                                    <span class="text-xs text-blue-600">8 players joined</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-8">
+                <!-- Achievement Showcase -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="award" class="w-5 h-5 mr-2 text-purple-500"></i>
+                        Achievement Gallery
+                    </h3>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl p-4 text-center text-white card-hover">
+                            <div class="text-3xl mb-2">👑</div>
+                            <div class="font-bold text-sm">Court Master</div>
+                            <div class="text-xs opacity-90">Elite Level</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl p-4 text-center text-white card-hover">
+                            <div class="text-3xl mb-2">🏀</div>
+                            <div class="font-bold text-sm">Shooter</div>
+                            <div class="text-xs opacity-90">50 Games Won</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-xl p-4 text-center text-white card-hover">
+                            <div class="text-3xl mb-2">👥</div>
+                            <div class="font-bold text-sm">Social Star</div>
+                            <div class="text-xs opacity-90">20+ Friends</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl p-4 text-center text-white card-hover">
+                            <div class="text-3xl mb-2">🎯</div>
+                            <div class="font-bold text-sm">Organizer</div>
+                            <div class="text-xs opacity-90">25 Games Hosted</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-red-400 to-red-600 rounded-xl p-4 text-center text-white card-hover">
+                            <div class="text-3xl mb-2">🔥</div>
+                            <div class="font-bold text-sm">Streak</div>
+                            <div class="text-xs opacity-90">7 Day Active</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl p-4 text-center text-white card-hover">
+                            <div class="text-3xl mb-2">⭐</div>
+                            <div class="font-bold text-sm">Rising Star</div>
+                            <div class="text-xs opacity-90">Level 10 Reached</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <button class="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                            View All Badges (8)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Performance Stats -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2 text-green-500"></i>
+                        Performance Stats
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Games This Month</span>
+                                <span class="text-lg font-bold text-blue-600">24</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 80%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">Goal: 30 games</div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Overall Win Rate</span>
+                                <span class="text-lg font-bold text-green-600">68%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 68%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">Above average (55%)</div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Activity Streak</span>
+                                <span class="text-lg font-bold text-yellow-600">7 days</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 35%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">Personal best: 20 days</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="zap" class="w-5 h-5 mr-2 text-yellow-500"></i>
+                        Quick Actions
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <button class="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2">
+                            <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+                            <span>Schedule Game</span>
+                        </button>
+                        <button class="w-full bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center justify-center space-x-2">
+                            <i data-lucide="search" class="w-5 h-5"></i>
+                            <span>Find Players</span>
+                        </button>
+                        <button class="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2">
+                            <i data-lucide="edit" class="w-5 h-5"></i>
+                            <span>Edit Profile</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Account Info -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="info" class="w-5 h-5 mr-2 text-gray-500"></i>
+                        Account Info
+                    </h3>
+                    
+                    <div class="space-y-4 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Member Since</span>
+                            <span class="font-medium">Dec 2024</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Location</span>
+                            <span class="font-medium">New York, NY</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Age Group</span>
+                            <span class="font-medium">16-18 years</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Profile Views</span>
+                            <span class="font-medium">156 this week</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Safety Rating</span>
+                            <span class="font-medium text-green-600">⭐⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

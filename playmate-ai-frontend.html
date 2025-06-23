@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMate - Street Sports Matchmaking Platform</title>
+    <meta name="description" content="Find playmates nearby for your favorite sports. Connect, play, and level up with PlayMate's smart matchmaking platform.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'hsl(217, 91%, 60%)',
+                        secondary: 'hsl(142, 76%, 36%)',
+                        accent: 'hsl(45, 93%, 47%)',
+                        'slate-50': 'hsl(210, 40%, 98%)',
+                        'slate-100': 'hsl(210, 40%, 96%)',
+                        'slate-900': 'hsl(222, 84%, 5%)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(142, 76%, 36%) 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .badge-glow {
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+        
+        @keyframes bounce-slow {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40%, 43% {
+                transform: translateY(-30px);
+            }
+            70% {
+                transform: translateY(-15px);
+            }
+            90% {
+                transform: translateY(-4px);
+            }
+        }
+        
+        @keyframes pulse-slow {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+        
+        .animate-bounce-slow {
+            animation: bounce-slow 2s infinite;
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse-slow 3s infinite;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .active-nav {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: hsl(217, 91%, 60%);
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        
+        .sports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .notification-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans">
+    <!-- Navigation -->
+    <nav id="navigation" class="bg-white shadow-sm border-b sticky top-0 z-50 hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="showPage('home')">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
+                        <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900">PlayMate</span>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <button onclick="showPage('home')" class="nav-link flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-colors text-gray-700 hover:text-blue-500 hover:bg-gray-50" data-page="home">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="showPage('friends')" class="nav-link flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-colors text-gray-700 hover:text-blue-500 hover:bg-gray-50" data-page="friends">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span>Friends</span>
+                        <span id="friend-requests-badge" class="notification-dot hidden">0</span>
+                    </button>
+                    <button onclick="showPage('profile')" class="nav-link flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-colors text-gray-700 hover:text-blue-500 hover:bg-gray-50" data-page="profile">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        <span>Profile</span>
+                    </button>
+                    <button onclick="showPage('preferences')" class="nav-link flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-colors text-gray-700 hover:text-blue-500 hover:bg-gray-50" data-page="preferences">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                        <span>Preferences</span>
+                    </button>
+                </div>
+
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    <span class="bg-yellow-500 text-white font-semibold px-3 py-1 rounded-full text-sm hidden sm:flex">
+                        Level <span id="user-level">1</span>
+                    </span>
+                    <div class="relative">
+                        <button onclick="toggleUserMenu()" class="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100">
+                            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold" id="user-avatar">
+                                AS
+                            </div>
+                        </button>
+                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border">
+                            <div class="p-4 border-b">
+                                <p class="font-medium" id="user-name">Alex Smith</p>
+                                <p class="text-sm text-gray-600" id="user-email">alex@example.com</p>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 mt-2">
+                                    <span id="user-xp">2450</span> XP
+                                </span>
+                            </div>
+                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-50 flex items-center">
+                                <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
+                                Log out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page -->
+    <div id="landing-page" class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
+                            <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">PlayMate AI</span>
+                    </div>
+                    
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="#home" class="text-gray-700 hover:text-blue-500 font-medium">Home</a>
+                        <a href="#about" class="text-gray-700 hover:text-blue-500 font-medium">About</a>
+                        <a href="#how-it-works" class="text-gray-700 hover:text-blue-500 font-medium">How It Works</a>
+                        <div class="flex items-center space-x-3">
+                            <button onclick="login()" class="px-4 py-2 text-gray-700 hover:text-blue-500">Login</button>
+                            <button onclick="login()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Sign Up</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section id="home" class="hero-gradient text-white py-20 px-4">
+            <div class="max-w-6xl mx-auto text-center">
+                <div class="mb-8">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                        Find Playmates Nearby for Your
+                        <span class="text-yellow-300">Favorite Sports</span>
+                    </h1>
+                    <p class="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
+                        Play. Connect. Level Up. Join the community of young athletes and discover your next game buddy!
+                    </p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                    <button onclick="login()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all">
+                        Join Now - It's Free!
+                    </button>
+                    <button onclick="login()" class="bg-white/20 backdrop-blur hover:bg-white/30 text-white border border-white/30 px-8 py-4 text-lg font-semibold rounded-lg">
+                        Find Players Near You
+                    </button>
+                </div>
+
+                <!-- Hero Features -->
+                <div class="grid md:grid-cols-3 gap-8 mt-16">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="map-pin" class="w-8 h-8 text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Smart Matching</h3>
+                        <p class="text-blue-100">AI-powered matching based on location, skill level, and availability</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="award" class="w-8 h-8 text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Gamification</h3>
+                        <p class="text-blue-100">Earn XP, unlock badges, and climb leaderboards</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="users" class="w-8 h-8 text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Social Bonding</h3>
+                        <p class="text-blue-100">Build lasting friendships through shared sports experiences</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sports Showcase -->
+        <section class="py-20 px-4 bg-white">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Popular Sports on PlayMate</h2>
+                    <p class="text-xl text-gray-600 max-w-2xl mx-auto">From basketball courts to cricket fields, find players for any sport you love</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                             alt="Kids playing basketball outdoors" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-2">Basketball</h3>
+                            <p class="text-gray-600 mb-4">Find your court squad and improve your game together</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-green-600 font-medium">2,847 active players</span>
+                                <button class="text-blue-500 hover:text-blue-600 font-medium">Join →</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                             alt="Kids playing cricket outdoors" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-2">Cricket</h3>
+                            <p class="text-gray-600 mb-4">Bowl, bat, and build friendships on the cricket field</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-green-600 font-medium">3,521 active players</span>
+                                <button class="text-blue-500 hover:text-blue-600 font-medium">Join →</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                             alt="Kids playing tennis outdoors" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-2">Tennis</h3>
+                            <p class="text-gray-600 mb-4">Find your perfect doubles partner or singles opponent</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-green-600 font-medium">1,892 active players</span>
+                                <button class="text-blue-500 hover:text-blue-600 font-medium">Join →</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works" class="py-20 px-4 bg-slate-50">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How PlayMate Works</h2>
+                    <p class="text-xl text-gray-600 max-w-2xl mx-auto">Get started in just a few simple steps and start playing with new friends today</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="text-2xl font-bold text-white">1</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-3">Sign Up & Set Preferences</h3>
+                        <p class="text-gray-600">Create your profile and select your favorite sports and skill levels</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="text-2xl font-bold text-white">2</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-3">Get Smart Matches</h3>
+                        <p class="text-gray-600">Our system finds players near you with compatible schedules and skill levels</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="text-2xl font-bold text-white">3</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-3">Connect & Chat</h3>
+                        <p class="text-gray-600">Send friend requests and coordinate games through our chat system</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="text-2xl font-bold text-white">4</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-3">Play & Level Up</h3>
+                        <p class="text-gray-600">Meet up, play your favorite sports, earn XP, and unlock cool badges</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-20 px-4 bg-white">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Building Stronger Communities Through Sports</h2>
+                        <p class="text-lg text-gray-600 mb-6">
+                            PlayMate was born from a simple belief: every kid deserves the joy of playing sports with friends. 
+                            In an increasingly digital world, we're bringing young people back outdoors to experience the thrill 
+                            of competition, the bonds of teamwork, and the satisfaction of physical activity.
+                        </p>
+                        <p class="text-lg text-gray-600 mb-8">
+                            Our platform uses smart technology to break down barriers and create opportunities for spontaneous play, 
+                            helping build healthier, more connected communities one game at a time.
+                        </p>
+                        
+                        <div class="grid grid-cols-3 gap-6 mb-8">
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-blue-500">10K+</p>
+                                <p class="text-sm text-gray-600">Active Players</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-green-500">25K+</p>
+                                <p class="text-sm text-gray-600">Games Played</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold text-yellow-500">150+</p>
+                                <p class="text-sm text-gray-600">Cities</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                             alt="Diverse group of teenagers celebrating sports" class="rounded-2xl shadow-2xl w-full object-cover">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white py-16 px-4">
+            <div class="max-w-6xl mx-auto text-center">
+                <div class="flex items-center justify-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
+                        <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold">PlayMate</span>
+                </div>
+                <p class="text-gray-400 mb-6 max-w-md mx-auto">
+                    Connecting young athletes worldwide through the power of sports, friendship, and smart technology.
+                </p>
+                <p class="text-sm text-gray-500">© 2025 PlayMate. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard-page" class="min-h-screen hidden">
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Dashboard Header -->
+            <div class="bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-8 shadow-2xl mb-8">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
+                    <div class="flex items-center space-x-4 mb-4 lg:mb-0">
+                        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white text-xl font-bold" id="dashboard-avatar">
+                            AS
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900" id="dashboard-name">Alex Smith</h3>
+                            <div class="flex items-center space-x-4">
+                                <span class="bg-yellow-500 text-white font-semibold px-3 py-1 rounded-full">
+                                    Level <span id="dashboard-level">12</span> • <span id="dashboard-xp">2,450</span> XP
+                                </span>
+                                <div class="flex space-x-1">
+                                    <div class="w-6 h-6 bg-yellow-400 rounded-full badge-glow flex items-center justify-center">
+                                        <span class="text-xs">🏀</span>
+                                    </div>
+                                    <div class="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
+                                        <span class="text-xs">🏏</span>
+                                    </div>
+                                    <div class="w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center">
+                                        <span class="text-xs">🎾</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="showHostGameModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center">
+                            <i data-lucide="gamepad-2" class="w-4 h-4 mr-2"></i>
+                            Host Game
+                        </button>
+                        <button class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center">
+                            <i data-lucide="zap" class="w-4 h-4 mr-2"></i>
+                            Join Game
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Nearby Players Map -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-xl font-semibold">Players Near You</h4>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                                    <span class="text-sm text-gray-600">Live</span>
+                                </div>
+                            </div>
+                            <div class="bg-blue-50 rounded-xl h-64 flex items-center justify-center relative overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-br from-blue-100 to-green-100"></div>
+                                
+                                <!-- Mock player pins -->
+                                <div class="absolute top-8 left-12 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center animate-bounce-slow">
+                                    <span class="text-white text-xs font-bold">🏀</span>
+                                </div>
+                                <div class="absolute top-16 right-16 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                    <span class="text-white text-xs font-bold">🏏</span>
+                                </div>
+                                <div class="absolute bottom-12 left-20 w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center animate-pulse-slow">
+                                    <span class="text-white text-xs font-bold">🎾</span>
+                                </div>
+                                
+                                <div class="text-center z-10">
+                                    <i data-lucide="map-pin" class="w-12 h-12 text-gray-400 mx-auto mb-2"></i>
+                                    <p class="text-gray-600 font-medium">Interactive Map View</p>
+                                    <p class="text-sm text-gray-500">12 players online nearby</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Feed & Matches -->
+                    <div class="space-y-6">
+                        <!-- Match Suggestions -->
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h4 class="text-lg font-semibold mb-4 flex items-center">
+                                <i data-lucide="users" class="w-5 h-5 mr-2"></i>
+                                Perfect Matches
+                            </h4>
+                            <div class="space-y-4">
+                                <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-xl">
+                                    <div class="w-10 h-10 bg-green-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                        MJ
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-900">Maya Johnson</p>
+                                        <p class="text-sm text-gray-600">Basketball • 0.3 mi</p>
+                                    </div>
+                                    <button onclick="sendFriendRequest('maya')" class="text-green-600 hover:text-green-700">
+                                        <i data-lucide="plus" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-xl">
+                                    <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                        DL
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-900">David Lee</p>
+                                        <p class="text-sm text-gray-600">Cricket • 0.5 mi</p>
+                                    </div>
+                                    <button onclick="sendFriendRequest('david')" class="text-blue-600 hover:text-blue-700">
+                                        <i data-lucide="plus" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h4 class="text-lg font-semibold mb-4">Recent Activity</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3 text-sm">
+                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                    <span class="text-gray-600">Earned "Court Master" badge</span>
+                                </div>
+                                <div class="flex items-center space-x-3 text-sm">
+                                    <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                    <span class="text-gray-600">Played with Sarah T. (+50 XP)</span>
+                                </div>
+                                <div class="flex items-center space-x-3 text-sm">
+                                    <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                    <span class="text-gray-600">New friend request from Mike</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="hero-gradient text-white rounded-xl p-6">
+                            <h4 class="text-lg font-semibold mb-4">This Week</h4>
+                            <div class="grid grid-cols-2 gap-4 text-center">
+                                <div>
+                                    <p class="text-2xl font-bold">7</p>
+                                    <p class="text-sm text-blue-100">Games Played</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold">3</p>
+                                    <p class="text-sm text-blue-100">New Friends</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Games -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h4 class="text-xl font-semibold mb-6 flex items-center">
+                    <i data-lucide="calendar" class="w-5 h-5 mr-2"></i>
+                    Available Games
+                </h4>
+                <div id="games-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Games will be populated by JavaScript -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Friends Page -->
+    <div id="friends-page" class="min-h-screen hidden">
+        <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Friends</h1>
+                <p class="text-gray-600">Connect with your PlayMates and coordinate games</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="mb-6 border-b">
+                <nav class="flex space-x-8">
+                    <button onclick="showFriendsTab('friends')" class="friends-tab py-2 px-1 border-b-2 font-medium text-sm active-tab" data-tab="friends">
+                        <i data-lucide="users" class="w-4 h-4 inline mr-1"></i>
+                        Friends
+                    </button>
+                    <button onclick="showFriendsTab('requests')" class="friends-tab py-2 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="requests">
+                        <i data-lucide="user-plus" class="w-4 h-4 inline mr-1"></i>
+                        Requests
+                        <span id="requests-count" class="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
+                    </button>
+                    <button onclick="showFriendsTab('sent')" class="friends-tab py-2 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700" data-tab="sent">
+                        <i data-lucide="message-circle" class="w-4 h-4 inline mr-1"></i>
+                        Sent
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Friends Tab Content -->
+            <div id="friends-tab" class="tab-content">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Your Friends</h3>
+                    <div id="friends-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Friends will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requests Tab Content -->
+            <div id="requests-tab" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Friend Requests</h3>
+                    <div id="friend-requests-list" class="space-y-4">
+                        <!-- Friend requests will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sent Tab Content -->
+            <div id="sent-tab" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Sent Requests</h3>
+                    <div id="sent-requests-list" class="space-y-4">
+                        <!-- Sent requests will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profile-page" class="min-h-screen hidden">
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Profile Header -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                <div class="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
+                    <div class="w-24 h-24 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold" id="profile-avatar">
+                        AS
+                    </div>
+                    
+                    <div class="flex-1">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2" id="profile-name">Alex Smith</h1>
+                        <div class="flex items-center space-x-4 mb-4">
+                            <span class="bg-yellow-500 text-white font-semibold px-3 py-1 rounded-full">
+                                Level <span id="profile-level">12</span>
+                            </span>
+                            <span class="border border-gray-300 px-3 py-1 rounded-full text-gray-600">
+                                <span id="profile-xp">2450</span> XP
+                            </span>
+                        </div>
+                        <div class="flex items-center text-gray-600 mb-4">
+                            <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                            <span>Joined December 2024</span>
+                        </div>
+                    </div>
+                    
+                    <button class="border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50">
+                        <i data-lucide="edit" class="w-4 h-4 mr-2 inline"></i>
+                        Edit Profile
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Sports Preferences -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i data-lucide="user" class="w-5 h-5 mr-2"></i>
+                        Sports Preferences
+                    </h3>
+                    <div id="user-sports" class="space-y-4">
+                        <!-- User sports will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Achievements -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i data-lucide="trophy" class="w-5 h-5 mr-2"></i>
+                        Achievements
+                    </h3>
+                    <div id="user-badges" class="grid grid-cols-2 gap-4">
+                        <!-- User badges will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Activity Stats -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Activity Stats</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <p class="text-2xl font-bold text-blue-500">7</p>
+                            <p class="text-sm text-gray-600">Games Played</p>
+                        </div>
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <p class="text-2xl font-bold text-green-500">3</p>
+                            <p class="text-sm text-gray-600">Friends Made</p>
+                        </div>
+                        <div class="text-center p-4 bg-yellow-50 rounded-lg">
+                            <p class="text-2xl font-bold text-yellow-500">2</p>
+                            <p class="text-sm text-gray-600">Games Hosted</p>
+                        </div>
+                        <div class="text-center p-4 bg-purple-50 rounded-lg">
+                            <p class="text-2xl font-bold text-purple-600" id="profile-level-stat">12</p>
+                            <p class="text-sm text-gray-600">Current Level</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Account Settings</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium">Email</p>
+                                <p class="text-sm text-gray-600" id="profile-email">alex@example.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium">Location Sharing</p>
+                                <p class="text-sm text-gray-600">Enable to find nearby players</p>
+                            </div>
+                            <button class="border border-gray-300 px-3 py-1 rounded text-sm">Configure</button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium">Notifications</p>
+                                <p class="text-sm text-gray-600">Manage your notification preferences</p>
+                            </div>
+                            <button class="border border-gray-300 px-3 py-1 rounded text-sm">Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Preferences Page -->
+    <div id="preferences-page" class="min-h-screen hidden">
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+                    <i data-lucide="settings" class="w-8 h-8 mr-3"></i>
+                    Sport Preferences
+                </h1>
+                <p class="text-gray-600">Choose your favorite sports and skill levels to find the perfect matches</p>
+            </div>
+
+            <div class="space-y-8">
+                <!-- Current Sports -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i data-lucide="trophy" class="w-5 h-5 mr-2"></i>
+                        Your Sports
+                    </h3>
+                    <div id="current-sports" class="grid md:grid-cols-2 gap-4">
+                        <!-- Current sports will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Add New Sports -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
+                        Add New Sports
+                    </h3>
+                    <div id="available-sports" class="grid md:grid-cols-2 gap-4 mb-6">
+                        <!-- Available sports will be populated by JavaScript -->
+                    </div>
+                    <div class="border-t pt-4">
+                        <button onclick="addSelectedSports()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg">
+                            <i data-lucide="plus" class="w-4 h-4 mr-2 inline"></i>
+                            Add Selected Sports
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Skill Level Guide -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4">Skill Level Guide</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <span class="border border-gray-300 px-2 py-1 rounded text-sm">Beginner</span>
+                            <div>
+                                <p class="font-medium">Just getting started</p>
+                                <p class="text-sm text-gray-600">New to the sport or playing casually</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Intermediate</span>
+                            <div>
+                                <p class="font-medium">Regular player</p>
+                                <p class="text-sm text-gray-600">Play regularly and know the basics well</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <span class="bg-blue-500 text-white px-2 py-1 rounded text-sm">Advanced</span>
+                            <div>
+                                <p class="font-medium">Experienced athlete</p>
+                                <p class="text-sm text-gray-600">High skill level, competitive play</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Chat Interface -->
+    <div id="chat-interface" class="min-h-screen hidden">
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="bg-white rounded-xl shadow-lg h-[600px] flex flex-col">
+                <!-- Chat Header -->
+                <div class="border-b p-4">
+                    <div class="flex items-center space-x-4">
+                        <button onclick="backToFriends()" class="text-gray-600 hover:text-gray-800">
+                            <i data-lucide="arrow-left" class="w-4 h-4 mr-2 inline"></i>
+                            Back
+                        </button>
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold" id="chat-friend-avatar">
+                            MJ
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold" id="chat-friend-name">Maya Johnson</h3>
+                            <p class="text-sm text-gray-600">Level 8</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                            <span class="text-sm text-gray-600">Online</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
+                    <!-- Messages will be populated by JavaScript -->
+                </div>
+
+                <!-- Message Input -->
+                <div class="border-t p-4">
+                    <form onsubmit="sendMessage(event)" class="flex space-x-2">
+                        <input type="text" id="message-input" placeholder="Type your message..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="button" onclick="assistMessage()" class="border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-50" title="Get smart assistance">
+                            <i data-lucide="bot" class="w-4 h-4"></i>
+                        </button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Tip: Use the smart assist button to get help coordinating games and activities!
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Host Game Modal -->
+    <div id="host-game-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-lg font-semibold mb-4">Host a Game</h3>
+            <form onsubmit="hostGame(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sport</label>
+                        <select id="game-sport" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select a sport</option>
+                            <option value="basketball">🏀 Basketball</option>
+                            <option value="cricket">🏏 Cricket</option>
+                            <option value="tennis">🎾 Tennis</option>
+                            <option value="baseball">⚾ Baseball</option>
+                            <option value="volleyball">🏐 Volleyball</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <input type="text" id="game-location" placeholder="e.g., Central Park Basketball Court" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date & Time</label>
+                        <input type="datetime-local" id="game-datetime" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Players</label>
+                        <input type="number" id="game-max-players" min="2" max="20" value="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="flex space-x-3 mt-6">
+                    <button type="button" onclick="closeHostGameModal()" class="flex-1 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Host Game</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Mock data
+        const userData = {
+            id: 'user1',
+            name: 'Alex Smith',
+            email: 'alex@example.com',
+            level: 12,
+            xp: 2450,
+            avatar: 'AS',
+            userSports: [
+                { id: 1, sport: { name: 'Basketball', emoji: '🏀' }, skillLevel: 'intermediate' },
+                { id: 2, sport: { name: 'Cricket', emoji: '🏏' }, skillLevel: 'beginner' },
+                { id: 3, sport: { name: 'Tennis', emoji: '🎾' }, skillLevel: 'advanced' }
+            ],
+            badges: [
+                { id: 1, name: 'Welcome Player', emoji: '🎉', earnedAt: '2024-12-01' },
+                { id: 2, name: 'Court Master', emoji: '🏀', earnedAt: '2024-12-15' },
+                { id: 3, name: 'First Friend', emoji: '👥', earnedAt: '2024-12-10' }
+            ]
+        };
+
+        const availableSports = [
+            { id: 1, name: 'Basketball', emoji: '🏀' },
+            { id: 2, name: 'Cricket', emoji: '🏏' },
+            { id: 3, name: 'Tennis', emoji: '🎾' },
+            { id: 4, name: 'Baseball', emoji: '⚾' },
+            { id: 5, name: 'Volleyball', emoji: '🏐' },
+            { id: 6, name: 'Badminton', emoji: '🏸' },
+            { id: 7, name: 'Table Tennis', emoji: '🏓' },
+            { id: 8, name: 'Hockey', emoji: '🏒' },
+            { id: 9, name: 'Rugby', emoji: '🏉' },
+            { id: 10, name: 'Golf', emoji: '⛳' }
+        ];
+
+        const mockFriends = [
+            { id: 'friend1', name: 'Maya Johnson', avatar: 'MJ', level: 8, status: 'online' },
+            { id: 'friend2', name: 'David Lee', avatar: 'DL', level: 15, status: 'offline' },
+            { id: 'friend3', name: 'Sarah Wilson', avatar: 'SW', level: 6, status: 'online' }
+        ];
+
+        const mockFriendRequests = [
+            { id: 'req1', sender: { name: 'Mike Chen', avatar: 'MC' }, createdAt: '2024-12-20' }
+        ];
+
+        const mockGames = [
+            {
+                id: 'game1',
+                sport: { name: 'Basketball', emoji: '🏀' },
+                host: { name: 'John Doe' },
+                location: 'Central Park Court',
+                scheduledAt: '2024-12-25T14:00:00',
+                participants: 2,
+                maxPlayers: 4
+            },
+            {
+                id: 'game2',
+                sport: { name: 'Cricket', emoji: '🏏' },
+                host: { name: 'Raj Patel' },
+                location: 'Cricket Ground',
+                scheduledAt: '2024-12-26T10:00:00',
+                participants: 5,
+                maxPlayers: 11
+            }
+        ];
+
+        let currentPage = 'landing';
+        let isLoggedIn = false;
+        let selectedSports = new Set();
+        let skillLevels = {};
+        let chatMessages = [];
+
+        // Navigation functions
+        function showPage(page) {
+            // Hide all pages
+            document.querySelectorAll('[id$="-page"]').forEach(p => p.classList.add('hidden'));
+            document.getElementById('navigation').classList.add('hidden');
+            
+            if (page === 'landing') {
+                document.getElementById('landing-page').classList.remove('hidden');
+            } else {
+                document.getElementById('navigation').classList.remove('hidden');
+                document.getElementById(page + '-page').classList.remove('hidden');
+                
+                // Update navigation active state
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active-nav');
+                    if (link.dataset.page === page) {
+                        link.classList.add('active-nav');
+                    }
+                });
+            }
+            
+            currentPage = page;
+            
+            // Load page-specific data
+            switch(page) {
+                case 'dashboard':
+                case 'home':
+                    loadDashboard();
+                    break;
+                case 'friends':
+                    loadFriends();
+                    break;
+                case 'profile':
+                    loadProfile();
+                    break;
+                case 'preferences':
+                    loadPreferences();
+                    break;
+            }
+        }
+
+        function login() {
+            isLoggedIn = true;
+            updateUserData();
+            showPage('home');
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            showPage('landing');
+        }
+
+        function updateUserData() {
+            // Update all user data elements
+            document.getElementById('user-level').textContent = userData.level;
+            document.getElementById('user-name').textContent = userData.name;
+            document.getElementById('user-email').textContent = userData.email;
+            document.getElementById('user-xp').textContent = userData.xp;
+            document.getElementById('user-avatar').textContent = userData.avatar;
+            
+            // Dashboard elements
+            document.getElementById('dashboard-avatar').textContent = userData.avatar;
+            document.getElementById('dashboard-name').textContent = userData.name;
+            document.getElementById('dashboard-level').textContent = userData.level;
+            document.getElementById('dashboard-xp').textContent = userData.xp;
+            
+            // Profile elements
+            document.getElementById('profile-avatar').textContent = userData.avatar;
+            document.getElementById('profile-name').textContent = userData.name;
+            document.getElementById('profile-level').textContent = userData.level;
+            document.getElementById('profile-xp').textContent = userData.xp;
+            document.getElementById('profile-email').textContent = userData.email;
+            document.getElementById('profile-level-stat').textContent = userData.level;
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('user-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Dashboard functions
+        function loadDashboard() {
+            loadGames();
+        }
+
+        function loadGames() {
+            const gamesList = document.getElementById('games-list');
+            if (!gamesList) return;
+            
+            if (mockGames.length === 0) {
+                gamesList.innerHTML = `
+                    <div class="col-span-full text-center py-8">
+                        <i data-lucide="gamepad-2" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-600 font-medium">No games available right now</p>
+                        <p class="text-sm text-gray-500 mb-4">Be the first to host a game!</p>
+                        <button onclick="showHostGameModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Host a Game</button>
+                    </div>
+                `;
+            } else {
+                gamesList.innerHTML = mockGames.map(game => `
+                    <div class="bg-white border rounded-lg p-4 card-hover">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">${game.sport.emoji} ${game.sport.name}</span>
+                            <span class="text-sm text-gray-500">${game.participants}/${game.maxPlayers} players</span>
+                        </div>
+                        <p class="font-medium text-gray-900 mb-2">Hosted by ${game.host.name}</p>
+                        <div class="flex items-center text-sm text-gray-600 mb-2">
+                            <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>
+                            ${game.location}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600 mb-3">
+                            <i data-lucide="calendar" class="w-4 h-4 mr-1"></i>
+                            ${new Date(game.scheduledAt).toLocaleDateString()}
+                        </div>
+                        <button onclick="joinGame('${game.id}')" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center">
+                            <i data-lucide="users" class="w-4 h-4 mr-1"></i>
+                            Join Game
+                        </button>
+                    </div>
+                `).join('');
+            }
+            
+            // Re-initialize Lucide icons
+            lucide.createIcons();
+        }
+
+        function joinGame(gameId) {
+            alert(`Joined game ${gameId}! The host will be notified.`);
+        }
+
+        function sendFriendRequest(userId) {
+            alert(`Friend request sent to ${userId}!`);
+        }
+
+        // Friends functions
+        function loadFriends() {
+            loadFriendsList();
+            loadFriendRequests();
+            updateFriendRequestsBadge();
+        }
+
+        function loadFriendsList() {
+            const friendsList = document.getElementById('friends-list');
+            if (!friendsList) return;
+            
+            if (mockFriends.length === 0) {
+                friendsList.innerHTML = `
+                    <div class="col-span-full text-center py-8">
+                        <i data-lucide="users" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-600 font-medium">No friends yet</p>
+                        <p class="text-sm text-gray-500 mb-4">Start connecting with other players!</p>
+                    </div>
+                `;
+            } else {
+                friendsList.innerHTML = mockFriends.map(friend => `
+                    <div class="bg-gray-50 rounded-lg p-4 card-hover">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                                ${friend.avatar}
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">${friend.name}</p>
+                                <p class="text-sm text-gray-600">Level ${friend.level}</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="openChat('${friend.id}')" class="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center">
+                                <i data-lucide="message-circle" class="w-4 h-4 mr-1"></i>
+                                Chat
+                            </button>
+                            <button class="border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-50">
+                                Invite to Play
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            lucide.createIcons();
+        }
+
+        function loadFriendRequests() {
+            const requestsList = document.getElementById('friend-requests-list');
+            if (!requestsList) return;
+            
+            if (mockFriendRequests.length === 0) {
+                requestsList.innerHTML = `
+                    <div class="text-center py-8">
+                        <i data-lucide="user-plus" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-600 font-medium">No pending friend requests</p>
+                        <p class="text-sm text-gray-500">New requests will appear here</p>
+                    </div>
+                `;
+            } else {
+                requestsList.innerHTML = mockFriendRequests.map(request => `
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                                ${request.sender.avatar}
+                            </div>
+                            <div>
+                                <p class="font-medium">${request.sender.name}</p>
+                                <p class="text-sm text-gray-600">Sent ${new Date(request.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="acceptFriendRequest('${request.id}')" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center">
+                                <i data-lucide="check" class="w-4 h-4 mr-1"></i>
+                                Accept
+                            </button>
+                            <button onclick="declineFriendRequest('${request.id}')" class="border border-gray-300 px-3 py-1 rounded hover:bg-gray-50 flex items-center">
+                                <i data-lucide="x" class="w-4 h-4 mr-1"></i>
+                                Decline
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            lucide.createIcons();
+        }
+
+        function updateFriendRequestsBadge() {
+            const badge = document.getElementById('friend-requests-badge');
+            const count = document.getElementById('requests-count');
+            const requestsCount = mockFriendRequests.length;
+            
+            if (requestsCount > 0) {
+                badge.classList.remove('hidden');
+                badge.textContent = requestsCount;
+                count.classList.remove('hidden');
+                count.textContent = requestsCount;
+            } else {
+                badge.classList.add('hidden');
+                count.classList.add('hidden');
+            }
+        }
+
+        function showFriendsTab(tab) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(tab + '-tab').classList.remove('hidden');
+            
+            // Update tab styles
+            document.querySelectorAll('.friends-tab').forEach(tabButton => {
+                tabButton.classList.remove('active-tab', 'border-blue-500', 'text-blue-600');
+                tabButton.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            const activeTab = document.querySelector(`[data-tab="${tab}"]`);
+            activeTab.classList.add('active-tab', 'border-blue-500', 'text-blue-600');
+            activeTab.classList.remove('border-transparent', 'text-gray-500');
+        }
+
+        function acceptFriendRequest(requestId) {
+            // Remove from requests and add to friends
+            const requestIndex = mockFriendRequests.findIndex(req => req.id === requestId);
+            if (requestIndex > -1) {
+                const request = mockFriendRequests[requestIndex];
+                mockFriends.push({
+                    id: 'friend' + (mockFriends.length + 1),
+                    name: request.sender.name,
+                    avatar: request.sender.avatar,
+                    level: Math.floor(Math.random() * 20) + 1,
+                    status: 'online'
+                });
+                mockFriendRequests.splice(requestIndex, 1);
+                loadFriends();
+                alert('Friend request accepted!');
+            }
+        }
+
+        function declineFriendRequest(requestId) {
+            const requestIndex = mockFriendRequests.findIndex(req => req.id === requestId);
+            if (requestIndex > -1) {
+                mockFriendRequests.splice(requestIndex, 1);
+                loadFriends();
+                alert('Friend request declined.');
+            }
+        }
+
+        function openChat(friendId) {
+            const friend = mockFriends.find(f => f.id === friendId);
+            if (friend) {
+                document.getElementById('chat-friend-avatar').textContent = friend.avatar;
+                document.getElementById('chat-friend-name').textContent = friend.name;
+                loadChatMessages(friendId);
+                showChatInterface();
+            }
+        }
+
+        function showChatInterface() {
+            document.querySelectorAll('[id$="-page"]').forEach(p => p.classList.add('hidden'));
+            document.getElementById('chat-interface').classList.remove('hidden');
+        }
+
+        function backToFriends() {
+            showPage('friends');
+        }
+
+        function loadChatMessages(friendId) {
+            // Mock chat messages
+            chatMessages = [
+                {
+                    id: 1,
+                    senderId: friendId,
+                    message: "Hey! Want to play some basketball later?",
+                    createdAt: new Date(Date.now() - 3600000).toISOString(),
+                    isGeminiAssisted: false
+                },
+                {
+                    id: 2,
+                    senderId: userData.id,
+                    message: "Sure! What time works for you?",
+                    createdAt: new Date(Date.now() - 3000000).toISOString(),
+                    isGeminiAssisted: false
+                },
+                {
+                    id: 3,
+                    senderId: friendId,
+                    message: "How about 3 PM at Central Park?",
+                    createdAt: new Date(Date.now() - 1800000).toISOString(),
+                    isGeminiAssisted: false
+                }
+            ];
+            
+            renderChatMessages();
+        }
+
+        function renderChatMessages() {
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = chatMessages.map(msg => {
+                const isFromUser = msg.senderId === userData.id;
+                const time = new Date(msg.createdAt).toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+                
+                return `
+                    <div class="flex ${isFromUser ? 'justify-end' : 'justify-start'}">
+                        <div class="message-bubble ${isFromUser ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-900'} rounded-lg px-4 py-2">
+                            ${msg.isSmartAssisted ? '<div class="flex items-center space-x-1 mb-1"><span class="bg-yellow-400 text-black text-xs px-2 py-1 rounded">🤖 Smart Assisted</span></div>' : ''}
+                            <p class="text-sm">${msg.message}</p>
+                            <p class="text-xs ${isFromUser ? 'text-blue-100' : 'text-gray-500'} mt-1">${time}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function sendMessage(event) {
+            event.preventDefault();
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                chatMessages.push({
+                    id: chatMessages.length + 1,
+                    senderId: userData.id,
+                    message: message,
+                    createdAt: new Date().toISOString(),
+                    isGeminiAssisted: false
+                });
+                
+                input.value = '';
+                renderChatMessages();
+                
+                // Simulate friend response
+                setTimeout(() => {
+                    chatMessages.push({
+                        id: chatMessages.length + 1,
+                        senderId: 'friend1',
+                        message: "Sounds great! See you there! 🏀",
+                        createdAt: new Date().toISOString(),
+                        isGeminiAssisted: false
+                    });
+                    renderChatMessages();
+                }, 1000);
+            }
+        }
+
+        function assistMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                // Simulate smart assistance
+                const assistedMessage = `Here's a suggestion: "${message}" - Maybe suggest a specific time and location for better coordination! 🤖`;
+                
+                chatMessages.push({
+                    id: chatMessages.length + 1,
+                    senderId: userData.id,
+                    message: assistedMessage,
+                    createdAt: new Date().toISOString(),
+                    isSmartAssisted: true
+                });
+                
+                input.value = '';
+                renderChatMessages();
+            }
+        }
+
+        // Profile functions
+        function loadProfile() {
+            loadUserSports();
+            loadUserBadges();
+        }
+
+        function loadUserSports() {
+            const userSportsContainer = document.getElementById('user-sports');
+            if (!userSportsContainer) return;
+            
+            if (userData.userSports.length === 0) {
+                userSportsContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-600 mb-4">No sports preferences set yet</p>
+                        <button onclick="showPage('preferences')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Add Sports</button>
+                    </div>
+                `;
+            } else {
+                userSportsContainer.innerHTML = userData.userSports.map(userSport => {
+                    const badgeClass = userSport.skillLevel === 'advanced' ? 'bg-blue-500 text-white' : 
+                                     userSport.skillLevel === 'intermediate' ? 'bg-green-100 text-green-800' : 'border border-gray-300 text-gray-700';
+                    
+                    return `
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">${userSport.sport.emoji}</span>
+                                <div>
+                                    <p class="font-medium">${userSport.sport.name}</p>
+                                    <span class="px-2 py-1 rounded text-sm ${badgeClass}">${userSport.skillLevel}</span>
+                                </div>
+                            </div>
+                            <button onclick="removeSport(${userSport.id})" class="text-gray-400 hover:text-red-500">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            lucide.createIcons();
+        }
+
+        function loadUserBadges() {
+            const userBadgesContainer = document.getElementById('user-badges');
+            if (!userBadgesContainer) return;
+            
+            if (userData.badges.length === 0) {
+                userBadgesContainer.innerHTML = `
+                    <div class="col-span-2 text-center py-8">
+                        <i data-lucide="trophy" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-600 mb-2">No badges earned yet</p>
+                        <p class="text-sm text-gray-500">Start playing to unlock achievements!</p>
+                    </div>
+                `;
+            } else {
+                userBadgesContainer.innerHTML = userData.badges.map(badge => `
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <div class="text-3xl mb-2">${badge.emoji}</div>
+                        <p class="font-medium text-sm">${badge.name}</p>
+                        <p class="text-xs text-gray-600 mt-1">${new Date(badge.earnedAt).toLocaleDateString()}</p>
+                    </div>
+                `).join('');
+            }
+            
+            lucide.createIcons();
+        }
+
+        function removeSport(sportId) {
+            userData.userSports = userData.userSports.filter(us => us.id !== sportId);
+            loadUserSports();
+        }
+
+        // Preferences functions
+        function loadPreferences() {
+            loadCurrentSports();
+            loadAvailableSports();
+        }
+
+        function loadCurrentSports() {
+            const currentSportsContainer = document.getElementById('current-sports');
+            if (!currentSportsContainer) return;
+            
+            if (userData.userSports.length === 0) {
+                currentSportsContainer.innerHTML = `
+                    <div class="col-span-2 text-center py-8">
+                        <i data-lucide="trophy" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                        <p class="text-gray-600 font-medium">No sports selected yet</p>
+                        <p class="text-sm text-gray-500">Add some sports below to get started!</p>
+                    </div>
+                `;
+            } else {
+                currentSportsContainer.innerHTML = userData.userSports.map(userSport => {
+                    const badgeClass = userSport.skillLevel === 'advanced' ? 'bg-blue-500 text-white' : 
+                                     userSport.skillLevel === 'intermediate' ? 'bg-green-100 text-green-800' : 'border border-gray-300 text-gray-700';
+                    
+                    return `
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-2xl">${userSport.sport.emoji}</span>
+                                <div>
+                                    <p class="font-medium">${userSport.sport.name}</p>
+                                    <span class="px-2 py-1 rounded text-sm ${badgeClass}">${userSport.skillLevel}</span>
+                                </div>
+                            </div>
+                            <button onclick="removeSport(${userSport.id})" class="text-gray-400 hover:text-red-500">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            lucide.createIcons();
+        }
+
+        function loadAvailableSports() {
+            const availableSportsContainer = document.getElementById('available-sports');
+            if (!availableSportsContainer) return;
+            
+            const userSportIds = userData.userSports.map(us => us.sport.name);
+            const available = availableSports.filter(sport => !userSportIds.includes(sport.name));
+            
+            if (available.length === 0) {
+                availableSportsContainer.innerHTML = `
+                    <div class="col-span-2 text-center py-8">
+                        <p class="text-gray-600">All available sports have been added!</p>
+                    </div>
+                `;
+            } else {
+                availableSportsContainer.innerHTML = available.map(sport => `
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" id="sport-${sport.id}" onchange="toggleSportSelection(${sport.id}, this.checked)" class="rounded">
+                            <label for="sport-${sport.id}" class="flex items-center space-x-2 cursor-pointer">
+                                <span class="text-xl">${sport.emoji}</span>
+                                <span class="font-medium">${sport.name}</span>
+                            </label>
+                        </div>
+                        <div id="skill-level-${sport.id}" class="ml-8 hidden">
+                            <select onchange="setSkillLevel(${sport.id}, this.value)" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function toggleSportSelection(sportId, checked) {
+            const skillLevelContainer = document.getElementById(`skill-level-${sportId}`);
+            
+            if (checked) {
+                selectedSports.add(sportId);
+                skillLevelContainer.classList.remove('hidden');
+                if (!skillLevels[sportId]) {
+                    skillLevels[sportId] = 'beginner';
+                }
+            } else {
+                selectedSports.delete(sportId);
+                skillLevelContainer.classList.add('hidden');
+                delete skillLevels[sportId];
+            }
+        }
+
+        function setSkillLevel(sportId, level) {
+            skillLevels[sportId] = level;
+        }
+
+        function addSelectedSports() {
+            selectedSports.forEach(sportId => {
+                const sport = availableSports.find(s => s.id === sportId);
+                if (sport) {
+                    userData.userSports.push({
+                        id: userData.userSports.length + 1,
+                        sport: sport,
+                        skillLevel: skillLevels[sportId] || 'beginner'
+                    });
+                }
+            });
+            
+            selectedSports.clear();
+            skillLevels = {};
+            loadPreferences();
+            alert('Sports added successfully!');
+        }
+
+        // Host Game Modal functions
+        function showHostGameModal() {
+            document.getElementById('host-game-modal').classList.remove('hidden');
+            document.getElementById('host-game-modal').classList.add('flex');
+        }
+
+        function closeHostGameModal() {
+            document.getElementById('host-game-modal').classList.add('hidden');
+            document.getElementById('host-game-modal').classList.remove('flex');
+        }
+
+        function hostGame(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const gameData = {
+                sport: document.getElementById('game-sport').value,
+                location: document.getElementById('game-location').value,
+                datetime: document.getElementById('game-datetime').value,
+                maxPlayers: document.getElementById('game-max-players').value
+            };
+            
+            // Add to mock games
+            const sportData = availableSports.find(s => s.name.toLowerCase() === gameData.sport);
+            mockGames.push({
+                id: 'game' + (mockGames.length + 1),
+                sport: sportData || { name: gameData.sport, emoji: '🏃' },
+                host: { name: userData.name },
+                location: gameData.location,
+                scheduledAt: gameData.datetime,
+                participants: 1,
+                maxPlayers: parseInt(gameData.maxPlayers)
+            });
+            
+            closeHostGameModal();
+            loadGames();
+            alert('Game hosted successfully!');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('host-game-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHostGameModal();
+            }
+        });
+
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const userMenu = document.getElementById('user-menu');
+            const userButton = userMenu.previousElementSibling;
+            
+            if (!userMenu.contains(e.target) && !userButton.contains(e.target)) {
+                userMenu.classList.add('hidden');
+            }
+        });
+
+        // Initialize Lucide icons when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            
+            // Set default datetime for host game modal
+            const now = new Date();
+            now.setHours(now.getHours() + 2);
+            document.getElementById('game-datetime').value = now.toISOString().slice(0, 16);
+        });
+
+        // Initialize page
+        showPage('landing');
+    </script>
+</body>
+</html>

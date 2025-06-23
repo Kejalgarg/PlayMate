@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayMate Dashboard - Find Your Next Game</title>
+    <meta name="description" content="PlayMate Dashboard - Discover nearby players, join games, and track your sports activities with smart matching">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'hsl(217, 91%, 60%)',
+                        secondary: 'hsl(142, 76%, 36%)',
+                        accent: 'hsl(45, 93%, 47%)',
+                        'slate-50': 'hsl(210, 40%, 98%)',
+                        'slate-100': 'hsl(210, 40%, 96%)',
+                        'slate-900': 'hsl(222, 84%, 5%)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(142, 76%, 36%) 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2.4);
+                opacity: 0;
+            }
+        }
+        
+        .bounce-slow {
+            animation: bounce-slow 3s infinite;
+        }
+        
+        @keyframes bounce-slow {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40%, 43% {
+                transform: translateY(-10px);
+            }
+            70% {
+                transform: translateY(-5px);
+            }
+            90% {
+                transform: translateY(-2px);
+            }
+        }
+        
+        .live-dot {
+            animation: live-pulse 2s infinite;
+        }
+        
+        @keyframes live-pulse {
+            0%, 100% {
+                background-color: #10b981;
+                transform: scale(1);
+            }
+            50% {
+                background-color: #34d399;
+                transform: scale(1.1);
+            }
+        }
+        
+        .notification-badge {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        
+        .activity-glow {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .game-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .game-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .player-pin {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .player-pin:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+        
+        .map-container {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #ecfdf5 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .floating-elements {
+            position: absolute;
+            inset: 0;
+            opacity: 0.3;
+        }
+        
+        .floating-elements::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 10%;
+            width: 100px;
+            height: 100px;
+            border: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-elements::after {
+            content: '';
+            position: absolute;
+            bottom: 30%;
+            right: 15%;
+            width: 60px;
+            height: 60px;
+            background: #10b981;
+            border-radius: 8px;
+            transform: rotate(45deg);
+            animation: float 4s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
+                        <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900">PlayMate</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="bg-blue-50 text-blue-600 px-3 py-2 rounded-lg font-medium flex items-center space-x-1">
+                        <i data-lucide="home" class="w-4 h-4"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="text-gray-700 hover:text-blue-500 font-medium flex items-center space-x-1 relative">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span>Friends</span>
+                        <span class="notification-badge absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs text-white font-bold">3</span>
+                    </a>
+                    <a href="#" class="text-gray-700 hover:text-blue-500 font-medium flex items-center space-x-1">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        <span>Profile</span>
+                    </a>
+                    <a href="#" class="text-gray-700 hover:text-blue-500 font-medium flex items-center space-x-1">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                        <span>Preferences</span>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="bg-yellow-500 text-white font-semibold px-3 py-1 rounded-full text-sm">
+                        Level 12
+                    </div>
+                    <button class="relative p-2 rounded-full hover:bg-gray-100">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                        <span class="notification-badge absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-xs text-white font-bold">2</span>
+                    </button>
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                        AS
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Header -->
+        <div class="hero-gradient rounded-3xl p-8 mb-8 text-white relative overflow-hidden">
+            <div class="floating-elements"></div>
+            <div class="relative z-10">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center">
+                    <div class="mb-6 lg:mb-0">
+                        <h1 class="text-3xl md:text-4xl font-bold mb-2">Welcome back, Alex! 👋</h1>
+                        <p class="text-blue-100 text-lg mb-4">Ready to find your next game? 12 players are active nearby</p>
+                        <div class="flex items-center space-x-6">
+                            <div class="stat-card rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold">2,450</div>
+                                <div class="text-sm text-blue-100">Total XP</div>
+                            </div>
+                            <div class="stat-card rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold">7</div>
+                                <div class="text-sm text-blue-100">This Week</div>
+                            </div>
+                            <div class="stat-card rounded-xl p-4 text-center">
+                                <div class="text-2xl font-bold">23</div>
+                                <div class="text-sm text-blue-100">Friends</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                        <button onclick="showHostModal()" class="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors flex items-center space-x-2">
+                            <i data-lucide="plus" class="w-5 h-5"></i>
+                            <span>Host Game</span>
+                        </button>
+                        <button class="bg-yellow-500 text-yellow-900 px-6 py-3 rounded-xl font-semibold hover:bg-yellow-400 transition-colors flex items-center space-x-2">
+                            <i data-lucide="search" class="w-5 h-5"></i>
+                            <span>Find Players</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Main Content Area -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Interactive Map -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                            <i data-lucide="map" class="w-6 h-6 mr-3 text-blue-500"></i>
+                            Players Near You
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <div class="live-dot w-3 h-3 rounded-full"></div>
+                            <span class="text-sm text-gray-600 font-medium">Live</span>
+                        </div>
+                    </div>
+                    
+                    <div class="map-container rounded-xl h-80 flex items-center justify-center relative">
+                        <!-- Player Pins -->
+                        <div class="player-pin absolute top-12 left-16" style="z-index: 5;">
+                            <div class="relative">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold border-2 border-white shadow-lg bounce-slow">
+                                    🏀
+                                </div>
+                                <div class="absolute inset-0 bg-blue-500 rounded-full pulse-ring"></div>
+                                <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                                    Maya J. - Basketball
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="player-pin absolute top-20 right-20" style="z-index: 5;">
+                            <div class="relative">
+                                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold border-2 border-white shadow-lg">
+                                    🏏
+                                </div>
+                                <div class="absolute inset-0 bg-green-500 rounded-full pulse-ring"></div>
+                                <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                                    David L. - Cricket
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="player-pin absolute bottom-16 left-20" style="z-index: 5;">
+                            <div class="relative">
+                                <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold border-2 border-white shadow-lg">
+                                    🎾
+                                </div>
+                                <div class="absolute inset-0 bg-yellow-500 rounded-full pulse-ring"></div>
+                                <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                                    Sarah W. - Tennis
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="player-pin absolute bottom-20 right-16" style="z-index: 5;">
+                            <div class="relative">
+                                <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold border-2 border-white shadow-lg">
+                                    ⚾
+                                </div>
+                                <div class="absolute inset-0 bg-purple-500 rounded-full pulse-ring"></div>
+                                <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                                    Mike C. - Baseball
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Center You Pin -->
+                        <div class="relative z-10">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold border-4 border-white shadow-xl">
+                                AS
+                            </div>
+                            <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                                You
+                            </div>
+                        </div>
+                        
+                        <!-- Map Controls -->
+                        <div class="absolute top-4 right-4 flex space-x-2">
+                            <button class="bg-white bg-opacity-90 p-2 rounded-lg shadow hover:bg-opacity-100">
+                                <i data-lucide="zoom-in" class="w-4 h-4 text-gray-600"></i>
+                            </button>
+                            <button class="bg-white bg-opacity-90 p-2 rounded-lg shadow hover:bg-opacity-100">
+                                <i data-lucide="zoom-out" class="w-4 h-4 text-gray-600"></i>
+                            </button>
+                            <button class="bg-white bg-opacity-90 p-2 rounded-lg shadow hover:bg-opacity-100">
+                                <i data-lucide="locate" class="w-4 h-4 text-gray-600"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Showing players within 2 miles</span>
+                        <button class="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                            Expand Search Radius
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Available Games -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900 flex items-center">
+                            <i data-lucide="calendar" class="w-6 h-6 mr-3 text-green-500"></i>
+                            Available Games
+                        </h3>
+                        <button class="text-blue-500 hover:text-blue-600 text-sm font-medium">
+                            View All Games
+                        </button>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- Basketball Game -->
+                        <div class="game-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-xl">
+                                        🏀
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900">Basketball</h4>
+                                        <p class="text-sm text-gray-600">Street Ball</p>
+                                    </div>
+                                </div>
+                                <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    3/5 players
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="user" class="w-4 h-4 mr-2"></i>
+                                    <span>Hosted by Maya Johnson</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>
+                                    <span>Central Park Court</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="clock" class="w-4 h-4 mr-2"></i>
+                                    <span>Today, 3:00 PM</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="star" class="w-4 h-4 mr-2"></i>
+                                    <span>Intermediate Level</span>
+                                </div>
+                            </div>
+                            
+                            <button onclick="joinGame('basketball')" class="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                                <span>Join Game</span>
+                            </button>
+                        </div>
+
+                        <!-- Cricket Match -->
+                        <div class="game-card bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-xl">
+                                        🏏
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900">Cricket</h4>
+                                        <p class="text-sm text-gray-600">T20 Match</p>
+                                    </div>
+                                </div>
+                                <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    8/11 players
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="user" class="w-4 h-4 mr-2"></i>
+                                    <span>Hosted by David Lee</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>
+                                    <span>Riverside Cricket Ground</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="clock" class="w-4 h-4 mr-2"></i>
+                                    <span>Tomorrow, 10:00 AM</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="star" class="w-4 h-4 mr-2"></i>
+                                    <span>All Levels Welcome</span>
+                                </div>
+                            </div>
+                            
+                            <button onclick="joinGame('cricket')" class="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors flex items-center justify-center space-x-2">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                                <span>Join Match</span>
+                            </button>
+                        </div>
+
+                        <!-- Tennis Game -->
+                        <div class="game-card bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center text-xl">
+                                        🎾
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900">Tennis</h4>
+                                        <p class="text-sm text-gray-600">Doubles</p>
+                                    </div>
+                                </div>
+                                <span class="bg-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold">
+                                    2/4 players
+                                </span>
+                            </div>
+                            
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="user" class="w-4 h-4 mr-2"></i>
+                                    <span>Hosted by Sarah Wilson</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>
+                                    <span>City Tennis Courts</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="clock" class="w-4 h-4 mr-2"></i>
+                                    <span>Today, 5:30 PM</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-700">
+                                    <i data-lucide="star" class="w-4 h-4 mr-2"></i>
+                                    <span>Beginner Friendly</span>
+                                </div>
+                            </div>
+                            
+                            <button onclick="joinGame('tennis')" class="w-full bg-yellow-500 text-yellow-900 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors flex items-center justify-center space-x-2">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                                <span>Join Game</span>
+                            </button>
+                        </div>
+
+                        <!-- Host New Game Card -->
+                        <div class="game-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-center space-y-4">
+                            <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i data-lucide="plus" class="w-6 h-6 text-gray-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-2">Host Your Own Game</h4>
+                                <p class="text-sm text-gray-600 mb-4">Create a new game and invite others to join</p>
+                                <button onclick="showHostModal()" class="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors">
+                                    Create Game
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-8">
+                <!-- Match Suggestions -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="zap" class="w-5 h-5 mr-2 text-yellow-500"></i>
+                        Perfect Matches
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="activity-glow rounded-xl p-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                                    MJ
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">Maya Johnson</p>
+                                    <p class="text-sm text-gray-600">Basketball • 0.3 mi • 98% match</p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Level 8</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full ml-2">Online</span>
+                                    </div>
+                                </div>
+                                <button onclick="sendRequest('maya')" class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600">
+                                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-glow rounded-xl p-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                                    DL
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">David Lee</p>
+                                    <p class="text-sm text-gray-600">Cricket • 0.5 mi • 94% match</p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Level 15</span>
+                                        <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full ml-2">Away</span>
+                                    </div>
+                                </div>
+                                <button onclick="sendRequest('david')" class="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600">
+                                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-glow rounded-xl p-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                                    SW
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">Sarah Wilson</p>
+                                    <p class="text-sm text-gray-600">Tennis • 0.8 mi • 91% match</p>
+                                    <div class="flex items-center mt-1">
+                                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">Level 6</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full ml-2">Online</span>
+                                    </div>
+                                </div>
+                                <button onclick="sendRequest('sarah')" class="bg-purple-500 text-white p-2 rounded-lg hover:bg-purple-600">
+                                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-2xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                        <i data-lucide="activity" class="w-5 h-5 mr-2 text-green-500"></i>
+                        Recent Activity
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-white text-sm">
+                                🏆
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Earned "Court Master" badge</p>
+                                <p class="text-sm text-gray-600">Won 50 basketball games</p>
+                                <span class="text-xs text-gray-500">2 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">
+                                🏀
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Game completed</p>
+                                <p class="text-sm text-gray-600">Won vs Team Thunder (+25 XP)</p>
+                                <span class="text-xs text-gray-500">5 hours ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">
+                                👥
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">New friend added</p>
+                                <p class="text-sm text-gray-600">Connected with Maya Johnson</p>
+                                <span class="text-xs text-gray-500">1 day ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm">
+                                🎯
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">Hosted cricket match</p>
+                                <p class="text-sm text-gray-600">8 players joined (+30 XP)</p>
+                                <span class="text-xs text-gray-500">2 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-4 text-blue-500 hover:text-blue-600 text-sm font-medium">
+                        View All Activity
+                    </button>
+                </div>
+
+                <!-- Smart Assistant -->
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl shadow-lg p-6 border-2 border-yellow-200">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i data-lucide="bot" class="w-5 h-5 mr-2 text-yellow-600"></i>
+                        Smart Game Coordinator
+                    </h3>
+                    
+                    <div class="bg-white rounded-lg p-4 mb-4">
+                        <p class="text-sm text-gray-700 mb-3">
+                            "I noticed you've been playing a lot of basketball lately! There's a cricket match tomorrow that could help you diversify your skills. Want me to help you join?"
+                        </p>
+                        <div class="flex space-x-2">
+                            <button class="bg-yellow-500 text-yellow-900 px-3 py-1 rounded text-sm font-medium hover:bg-yellow-600">
+                                Yes, help me join
+                            </button>
+                            <button class="text-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-100">
+                                Maybe later
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full bg-yellow-500 text-yellow-900 py-2 rounded-lg font-semibold hover:bg-yellow-600 transition-colors flex items-center justify-center space-x-2">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        <span>Smart Chat</span>
+                    </button>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="hero-gradient rounded-2xl p-6 text-white">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i data-lucide="trending-up" class="w-5 h-5 mr-2"></i>
+                        This Week's Goals
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm">Games Played</span>
+                                <span class="font-bold">7/10</span>
+                            </div>
+                            <div class="w-full bg-white bg-opacity-20 rounded-full h-2">
+                                <div class="bg-white h-2 rounded-full" style="width: 70%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm">XP Earned</span>
+                                <span class="font-bold">180/250</span>
+                            </div>
+                            <div class="w-full bg-white bg-opacity-20 rounded-full h-2">
+                                <div class="bg-white h-2 rounded-full" style="width: 72%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm">New Friends</span>
+                                <span class="font-bold">2/3</span>
+                            </div>
+                            <div class="w-full bg-white bg-opacity-20 rounded-full h-2">
+                                <div class="bg-white h-2 rounded-full" style="width: 67%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Host Game Modal -->
+    <div id="host-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-md mx-4">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">Host a New Game</h3>
+            <form onsubmit="hostGame(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sport</label>
+                        <select id="game-sport" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select a sport</option>
+                            <option value="basketball">🏀 Basketball</option>
+                            <option value="cricket">🏏 Cricket</option>
+                            <option value="tennis">🎾 Tennis</option>
+                            <option value="baseball">⚾ Baseball</option>
+                            <option value="volleyball">🏐 Volleyball</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <input type="text" id="game-location" placeholder="e.g., Central Park Basketball Court" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date & Time</label>
+                        <input type="datetime-local" id="game-datetime" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Players</label>
+                        <input type="number" id="game-max-players" min="2" max="20" value="4" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Skill Level</label>
+                        <select id="game-skill" class="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                            <option value="all">All Levels Welcome</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex space-x-3 mt-8">
+                    <button type="button" onclick="closeHostModal()" class="flex-1 border border-gray-300 px-4 py-3 rounded-lg hover:bg-gray-50 font-medium">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 font-semibold">Create Game</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Modal Functions
+        function showHostModal() {
+            document.getElementById('host-modal').classList.remove('hidden');
+            document.getElementById('host-modal').classList.add('flex');
+            
+            // Set default datetime to 2 hours from now
+            const now = new Date();
+            now.setHours(now.getHours() + 2);
+            document.getElementById('game-datetime').value = now.toISOString().slice(0, 16);
+        }
+
+        function closeHostModal() {
+            document.getElementById('host-modal').classList.add('hidden');
+            document.getElementById('host-modal').classList.remove('flex');
+        }
+
+        function hostGame(event) {
+            event.preventDefault();
+            const sport = document.getElementById('game-sport').value;
+            const location = document.getElementById('game-location').value;
+            const datetime = document.getElementById('game-datetime').value;
+            const maxPlayers = document.getElementById('game-max-players').value;
+            const skillLevel = document.getElementById('game-skill').value;
+            
+            if (!sport || !location || !datetime) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            closeHostModal();
+            alert(`Game created successfully! Your ${sport} game at ${location} has been posted.`);
+        }
+
+        function joinGame(gameType) {
+            alert(`You've requested to join the ${gameType} game! The host will be notified.`);
+        }
+
+        function sendRequest(username) {
+            alert(`Friend request sent to ${username}!`);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('host-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHostModal();
+            }
+        });
+
+        // Player pin interactions
+        document.querySelectorAll('.player-pin').forEach(pin => {
+            pin.addEventListener('click', function() {
+                const name = this.querySelector('.absolute.-bottom-8').textContent;
+                alert(`Click to view ${name}'s profile and send a friend request!`);
+            });
+        });
+
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
